@@ -54,6 +54,12 @@ func main() {
 	v1Router.Use(middleware.AuthMiddleware)
 	v1Router.Post("/url", apiHandler.HandlerAddUrl)
 
+	//Retrieve all images
+	v1Router.Get("/images", apiHandler.HandlerGetImages)
+
+	//Retrieve single image
+	v1Router.Get("/image/{id}", apiHandler.HandlerGetImage)
+
 	router.Mount("/v1", v1Router)
 
 	startServer(router, portString)

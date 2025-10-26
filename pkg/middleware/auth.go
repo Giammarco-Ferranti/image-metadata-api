@@ -20,10 +20,16 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return 
 		}
 
-		providedApiKey := strings.SplitAfter(authHeader, " ")
+		parts := strings.Split(authHeader, " ")
 
+		if len(parts) < 2 || parts[1] == "" {
+			responses.RespondWithError(w, 400, "Invalid Bearer token format")
+			return
+		}
 
-		if providedApiKey[1] == "" || providedApiKey[1] != apiKey {
+		token := strings.TrimSpace(parts[1])
+
+		if token != apiKey {
 			responses.RespondWithError(w, 400, "Unauthorized")
 			return 
 		}
