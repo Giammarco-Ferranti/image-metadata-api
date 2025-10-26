@@ -1,3 +1,8 @@
 main
 .env
-./vendor
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
