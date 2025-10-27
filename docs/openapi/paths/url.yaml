@@ -1,0 +1,19 @@
+post:
+  summary: Create a new image record
+  description: This endpoint lets you create a new image record with status 'pending', then a worker will analyze the image and update the db record
+
+  auth-permission:
+    - apiKey: Your environment api key
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: { "url": "a valid url" }
+
+  responses:
+    200:
+      description: Success
+      content:
+        application/json:
+          schema: #Data structure returned

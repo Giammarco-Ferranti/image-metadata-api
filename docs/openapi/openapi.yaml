@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: image-metadata-api
+  version: 1.0.0
+  description: This is an image metadata api
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /url:
+    $ref: ./paths/url.yaml
