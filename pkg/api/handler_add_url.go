@@ -33,9 +33,10 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 	params := paramaters{}
 	err := decoder.Decode(&params)
 
+
 	if err != nil {
-		log.Println("Error decoding params", err)
-		responses.RespondWithError(w, 500, "Error creating record")
+		log.Println("Error decoding request body", err)
+		responses.RespondWithError(w, 500, "Error decoding request body")
 		return
 	}
 	

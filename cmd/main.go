@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -56,6 +57,16 @@ func main() {
 	// go worker.StartProcessImage(db, imageQueue)
 
 	//Configure CORS
+	router.Use(cors.Handler(cors.Options{
+    // AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+    AllowedOrigins:   []string{"https://*", "http://*"},
+    // AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+    ExposedHeaders:   []string{"Link"},
+    AllowCredentials: false,
+    MaxAge:           300, // Maximum value not ignored by any of major browsers
+  }))
 
 	//Health endpoint
 	router.Get("/healthz", health.HandlerHealth)
@@ -66,12 +77,10 @@ func main() {
 	v1Router := chi.NewRouter()
 
 	v1Router.Use(middleware.AuthMiddleware)
-	v1Router.Post("/url", apiHandler.HandlerAddUrl)
 
-	//Retrieve all images
 	v1Router.Get("/images", apiHandler.HandlerGetImages)
 
-	//Retrieve single image
+	v1Router.Post("/image", apiHandler.HandlerAddUrl)
 	v1Router.Get("/image/{id}", apiHandler.HandlerGetImage)
 
 	router.Mount("/v1", v1Router)

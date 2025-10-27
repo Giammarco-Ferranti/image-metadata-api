@@ -1,5 +1,5 @@
 #Build stage
-FROM golang:1.25-apline
+FROM golang:1.25
 
 WORKDIR /app
 
