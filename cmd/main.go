@@ -4,11 +4,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/api"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/health"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/middleware"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/worker"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -48,13 +50,12 @@ func main() {
 
 	db.AutoMigrate(&models.ImageProcess{})
 
+	go worker.StartExtract(db, time.Minute)
+
 	log.Printf("Connection database started")
 
 	router := chi.NewRouter()
 
-	// imageQueue := make(chan models.ImageProcess, 10)
-
-	// go worker.StartProcessImage(db, imageQueue)
 
 	//Configure CORS
 	router.Use(cors.Handler(cors.Options{

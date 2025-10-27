@@ -19,7 +19,6 @@ import (
 
 type Handler struct {
 	DB *gorm.DB
-	ImageQueue chan models.ImageProcess
 }
 
 // Handler that add url to the database
@@ -72,8 +71,6 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Add image to queue
-	// h.ImageQueue <- imageProcess
 
 	responses.RespondWithJson(w, 200, imageProcess.ToResponse())
 }
