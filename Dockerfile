@@ -1,0 +1,12 @@
+#Build stage
+FROM golang:1.25-apline
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -v -o /app/main ./cmd
+
+CMD ["/app/main"]

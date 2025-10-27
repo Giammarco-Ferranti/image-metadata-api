@@ -72,7 +72,7 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Add image to queue
-	h.ImageQueue <- imageProcess
+	// h.ImageQueue <- imageProcess
 
 	responses.RespondWithJson(w, 200, imageProcess.ToResponse())
 }

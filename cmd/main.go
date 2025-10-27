@@ -9,7 +9,6 @@ import (
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/health"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/middleware"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/worker"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,10 +27,18 @@ func main() {
 		log.Printf("Couldn't find the port")
 	}
 
-	databaseUrl := os.Getenv("DB_URL")
-	if databaseUrl == "" {
-		log.Printf("Couldn't find the databaseUrl")
+	// Build database connection string from environment variables
+	dbUser := os.Getenv("POSTGRES_USER")
+	dbPassword := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+	dbHost := os.Getenv("POSTGRES_HOST")
+	dbPort := os.Getenv("POSTGRES_PORT")
+
+	if dbUser == "" || dbPassword == "" || dbName == "" || dbHost == "" || dbPort == "" {
+		log.Fatal("Missing required database environment variables")
 	}
+
+	databaseUrl := "host=" + dbHost + " user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(databaseUrl))
 	if err != nil {
@@ -44,9 +51,9 @@ func main() {
 
 	router := chi.NewRouter()
 
-	imageQueue := make(chan models.ImageProcess, 10)
+	// imageQueue := make(chan models.ImageProcess, 10)
 
-	go worker.StartProcessImage(db, imageQueue)
+	// go worker.StartProcessImage(db, imageQueue)
 
 	//Configure CORS
 
@@ -54,7 +61,7 @@ func main() {
 	router.Get("/healthz", health.HandlerHealth)
 
 	//Initiate api handler
-	apiHandler := api.Handler{DB: db, ImageQueue: imageQueue}
+	apiHandler := api.Handler{DB: db}
 
 	v1Router := chi.NewRouter()
 
