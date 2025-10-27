@@ -9,6 +9,7 @@ import (
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/health"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/middleware"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/worker"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -43,11 +44,17 @@ func main() {
 
 	router := chi.NewRouter()
 
+	imageQueue := make(chan models.ImageProcess, 10)
+
+	go worker.StartProcessImage(db, imageQueue)
+
+	//Configure CORS
+
 	//Health endpoint
 	router.Get("/healthz", health.HandlerHealth)
 
 	//Initiate api handler
-	apiHandler := api.Handler{DB: db}
+	apiHandler := api.Handler{DB: db, ImageQueue: imageQueue}
 
 	v1Router := chi.NewRouter()
 
