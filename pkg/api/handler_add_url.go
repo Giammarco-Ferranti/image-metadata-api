@@ -61,7 +61,6 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 		Width: 			sql.NullInt16{},
 		Height: 		sql.NullInt16{},
 		Format: 		sql.NullString{},
-		
 	}
 
 	err = h.DB.Create(&imageProcess).Error
@@ -71,5 +70,5 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.RespondWithJson(w, 200, "Succesfully added url")
+	responses.RespondWithJson(w, 200, imageProcess.ToResponse())
 }
