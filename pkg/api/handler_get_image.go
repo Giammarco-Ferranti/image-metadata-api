@@ -31,6 +31,8 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.RespondWithJson(w, 200, image)
+	responses.RespondWithJson(w, 200, responses.ItemResponse{
+		Data: image.ToResponse(),
+	})
 	
 }

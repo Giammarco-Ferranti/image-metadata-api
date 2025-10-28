@@ -72,5 +72,5 @@ func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	responses.RespondWithJson(w, 200, imageProcess.ToResponse())
+	responses.RespondWithJson(w, 200, responses.ItemResponse{Data: imageProcess.ToResponse()})
 }

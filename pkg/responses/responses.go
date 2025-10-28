@@ -4,7 +4,29 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
 )
+
+//For list responses
+type ListResponse struct {
+	Data []models.ImageProcessResponse `json:"data"`
+}
+
+//For single item responses
+type ItemResponse struct {
+	Data models.ImageProcessResponse 		`json:"data"`
+}
+//For responses with metadata
+type PaginatedResponse struct {
+	Data []models.ImageProcessResponse `json:"data"`
+	Meta PaginationMeta                `json:"meta"`
+}
+
+type PaginationMeta struct {
+	Total  int `json:"total"`
+	Offset int `json:"offset"`
+}
 
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	if code > 499 {

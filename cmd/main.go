@@ -50,7 +50,7 @@ func main() {
 
 	db.AutoMigrate(&models.ImageProcess{})
 
-	go worker.StartExtract(db, time.Minute)
+	go worker.StartExtract(db, time.Minute, 5)
 
 	log.Printf("Connection database started")
 
