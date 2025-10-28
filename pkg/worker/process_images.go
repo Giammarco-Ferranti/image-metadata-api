@@ -39,7 +39,7 @@ func StartExtract(DB *gorm.DB, timeBetweenRequest time.Duration, concurrency int
 		//Process each image
 		for _, image := range images {
 			wg.Add(1)
-			go processImage(image, wg, DB)
+			go ProcessImage(image, wg, DB)
 		}
 		wg.Wait()
 	}
@@ -47,7 +47,7 @@ func StartExtract(DB *gorm.DB, timeBetweenRequest time.Duration, concurrency int
 }
 
 //Function to process each image
-func processImage(img models.ImageProcess, wg *sync.WaitGroup, DB *gorm.DB) {
+func ProcessImage(img models.ImageProcess, wg *sync.WaitGroup, DB *gorm.DB) {
 	defer wg.Done()
 	err := DB.Where("id = ?", img.ID).Updates(models.ImageProcess{
 		UpdatedAt: time.Now().UTC(),
@@ -59,13 +59,13 @@ func processImage(img models.ImageProcess, wg *sync.WaitGroup, DB *gorm.DB) {
 		return
 	}
 
-	imageData, err := processRequest(img)
+	imageData, err := ProcessRequest(img)
 	if err != nil {
 		errorParse(img, "Error request url for image id", err, DB)
 		return 
 	}
 
-	width, height, format, err := decodeImage(imageData)
+	width, height, format, err := DecodeImage(imageData)
 	if err != nil {
 		errorParse(img, "Couldn't decode image id", err, DB)
 		return
@@ -100,7 +100,7 @@ func errorParse(img models.ImageProcess, msg string, err error, DB *gorm.DB) {
 	}
 }
 
-func processRequest(img models.ImageProcess) ([]byte, error) {
+func ProcessRequest(img models.ImageProcess) ([]byte, error) {
 	resp, err := http.Get(img.Url)
 
 	if err != nil {
@@ -122,7 +122,7 @@ func processRequest(img models.ImageProcess) ([]byte, error) {
 	return imageData, nil
 }
 
-func decodeImage(imageData []byte) (int16, int16, string, error) {
+func DecodeImage(imageData []byte) (int16, int16, string, error) {
 	imgValue, format, err := image.Decode(bytes.NewReader(imageData))
 
 	if err != nil {
