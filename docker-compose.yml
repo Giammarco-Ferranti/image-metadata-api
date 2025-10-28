@@ -1,25 +1,42 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: image-metadata-api:latest
     container_name: image-metadata-api
     ports:
       - "8080:8080"
     env_file:
       - .env
     depends_on:
-      - db
-    restart: unless-stopped
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
 
-  db:
+  postgres:
     image: postgres:16
     container_name: image-metadata-db
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    restart: unless-stopped
+    networks:
+      app-network:
+        aliases:
+          - db
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

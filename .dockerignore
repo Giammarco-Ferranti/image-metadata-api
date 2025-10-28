@@ -1,5 +1,32 @@
-main
-vendor
+# Git
 .git
-.env
+.gitignore
+
+# Documentation
 *.md
+README.md
+
+# CI/CD
+.github
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.*
+
+# Dependencies
+vendor/
+*.exe
+*.test
+*.prof
