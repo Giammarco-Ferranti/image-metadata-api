@@ -22,7 +22,7 @@ type Handler struct {
 }
 
 // Handler that add url to the database
-func (h Handler) HandlerAddUrl(w http.ResponseWriter, r *http.Request) {
+func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 
 	type paramaters struct {
 		Url string `json:"url"`
