@@ -25,10 +25,11 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		offset = 0 //default
 	}
-	if total > 100 {
-		responses.RespondWithError(w, 400, "Total cannot be more that 100")
+	if total > 100 || total < 0 || offset < 0 {
+		responses.RespondWithError(w, 400, "Total or offset not correct")
 		return
 	}
+
 
 
 	var images []models.ImageProcess
