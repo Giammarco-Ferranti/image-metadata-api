@@ -51,6 +51,7 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 		Meta: responses.PaginationMeta{
 			Total: total,
 			Offset: offset,
+			ResultsCount: len(images),
 		},
 	})
 }

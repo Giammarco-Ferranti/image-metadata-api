@@ -24,8 +24,9 @@ type PaginatedResponse struct {
 }
 
 type PaginationMeta struct {
-	Total  int `json:"total"`
-	Offset int `json:"offset"`
+	Total  int 	`json:"total"`
+	Offset int 	`json:"offset"`
+	ResultsCount  int	`json:"results_count"`
 }
 
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
