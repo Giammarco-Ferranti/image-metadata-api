@@ -79,10 +79,7 @@ func main() {
 
 	v1Router.Use(middleware.AuthMiddleware)
 
-	v1Router.Get("/images", apiHandler.HandlerGetImages)
-
-	v1Router.Post("/image", apiHandler.HandlerAddUrl)
-	v1Router.Get("/image/{id}", apiHandler.HandlerGetImage)
+	apiHandler.Routes(v1Router)
 
 	router.Mount("/v1", v1Router)
 
