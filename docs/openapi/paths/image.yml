@@ -1,0 +1,26 @@
+post:
+  summary: Create a new image record
+  description: Create a new image record with status 'pending'. A worker will analyze the image and update the database record with metadata.
+  tags:
+    - Images
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/AddImageRequest"
+  responses:
+    "200":
+      description: Image record created successfully
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ItemResponse"
+    "400":
+      description: Bad request (invalid URL or missing url field)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

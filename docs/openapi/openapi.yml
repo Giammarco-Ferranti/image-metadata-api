@@ -2,12 +2,44 @@ openapi: 3.1.0
 info:
   title: image-metadata-api
   version: 1.0.0
-  description: This is an image metadata api
+  description: This is an image metadata API that allows you to submit image URLs for processing and retrieve metadata about processed images.
 
 servers:
   - url: http://localhost:8080
     description: Local development
 
+tags:
+  - name: Images
+    description: Operations for managing image records and metadata
+
+security:
+  - BearerAuth: []
+
 paths:
-  /url:
-    $ref: ./paths/url.yaml
+  /images:
+    $ref: ./paths/images.yml
+  /image:
+    $ref: ./paths/image.yml
+  /image/{id}:
+    $ref: ./paths/image_{id}.yml
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key authentication using Bearer token in Authorization header
+  schemas:
+    ImageProcessResponse:
+      $ref: ./components/schemas.yml#/components/schemas/ImageProcessResponse
+    AddImageRequest:
+      $ref: ./components/schemas.yml#/components/schemas/AddImageRequest
+    ErrorResponse:
+      $ref: ./components/schemas.yml#/components/schemas/ErrorResponse
+    ItemResponse:
+      $ref: ./components/schemas.yml#/components/schemas/ItemResponse
+    PaginationMeta:
+      $ref: ./components/schemas.yml#/components/schemas/PaginationMeta
+    PaginatedResponse:
+      $ref: ./components/schemas.yml#/components/schemas/PaginatedResponse

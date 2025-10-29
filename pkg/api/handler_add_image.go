@@ -35,13 +35,13 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Error decoding request body", err)
-		responses.RespondWithError(w, 500, "Error decoding request body")
+		responses.RespondWithError(w, 400, "Error decoding request body")
 		return
 	}
 	
 	if len(params.Url) == 0 {
 		log.Println("Url cannot be empty")
-		responses.RespondWithError(w, 500, "Url cannot be empty")
+		responses.RespondWithError(w, 400, "Url cannot be empty")
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Url not valid", err)
-		responses.RespondWithError(w, 500, fmt.Sprintf("Url not valid: %v", err))
+		responses.RespondWithError(w, 400, fmt.Sprintf("Url not valid: %v", err))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 	err = h.DB.Create(&imageProcess).Error
 	if err != nil {
 		log.Println("Error creating record", err)
-		responses.RespondWithError(w, 500, fmt.Sprintf("Error creating record: %v", err))
+		responses.RespondWithError(w, 400, fmt.Sprintf("Error creating record: %v", err))
 		return
 	}
 

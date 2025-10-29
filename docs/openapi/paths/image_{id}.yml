@@ -1,0 +1,58 @@
+get:
+  summary: Get image by ID
+  description: Retrieve a single image record by its unique identifier
+  tags:
+    - Images
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Unique identifier of the image (UUID)
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: Image found successfully
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ItemResponse"
+    "400":
+      description: Bad request (invalid image ID or image not found)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+delete:
+  summary: Delete image by ID
+  description: Delete an image record. Cannot delete images with status 'in process'.
+  tags:
+    - Images
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Unique identifier of the image (UUID)
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: Image deleted successfully
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Successfully deleted image
+    "400":
+      description: Bad request (invalid image ID, image not found, or image has 'in process' status)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

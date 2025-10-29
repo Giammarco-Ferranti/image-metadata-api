@@ -1,0 +1,96 @@
+components:
+  schemas:
+    ImageProcessResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the image
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp in RFC3339 format
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp in RFC3339 format
+        url:
+          type: string
+          format: uri
+          description: URL of the image
+        status:
+          type: string
+          enum: [pending, in process, done, failed]
+          description: Processing status of the image
+        width:
+          type: integer
+          format: int16
+          nullable: true
+          description: Image width in pixels (only present when status is done)
+        height:
+          type: integer
+          format: int16
+          nullable: true
+          description: Image height in pixels (only present when status is done)
+        format:
+          type: string
+          nullable: true
+          description: Image format (only present when status is done)
+
+    AddImageRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Valid URL of the image to process
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
+
+    ItemResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ImageProcessResponse"
+      required:
+        - data
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Requested number of items per page
+        offset:
+          type: integer
+          description: Offset for pagination
+        results_count:
+          type: integer
+          description: Actual number of results returned
+      required:
+        - total
+        - offset
+        - results_count
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageProcessResponse"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required:
+        - data
+        - meta

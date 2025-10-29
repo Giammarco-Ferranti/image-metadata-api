@@ -1,0 +1,38 @@
+get:
+  summary: Get list of images
+  description: Retrieve a paginated list of images with optional filtering
+  tags:
+    - Images
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: total
+      in: query
+      description: Number of items to retrieve (max 100, default 100)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 100
+        default: 100
+    - name: offset
+      in: query
+      description: Offset for pagination (default 0)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+  responses:
+    "200":
+      description: Successful response with paginated image list
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginatedResponse"
+    "400":
+      description: Bad request (invalid total or offset parameters)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
