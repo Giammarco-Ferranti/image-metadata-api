@@ -209,7 +209,13 @@ Authorization: Bearer <API_KEY>
 
 Deletes an image from the database.
 
-**Response:** HTTP 204 No Content
+**Response:**
+
+```json
+"Successfully deleted image"
+```
+
+HTTP Status: 200 OK
 
 ## Image Status
 
