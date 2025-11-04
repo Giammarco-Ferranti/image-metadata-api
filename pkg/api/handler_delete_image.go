@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/domain"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
 func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
-	
+	ctx := r.Context()
 	imageIdString := chi.URLParam(r, "id")
 	imageId, err := uuid.Parse(imageIdString)
 
@@ -22,8 +22,8 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var image models.ImageProcess
-	err = h.DB.Where("id = ?", imageId).Find(&image).Error
+
+	image, err := h.Querier.FindById(ctx, imageId)
 
 	if err != nil {
 		log.Println("Couldn't get image:", err)
@@ -31,14 +31,26 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if image.Status == "in process" {
+	if image == nil {
+		responses.RespondWithError(w, 404, "Image not found")
+		return
+	}
+
+	if !image.CanDelete() {
 		log.Println("Cannot delete image with status 'in process'")
 		responses.RespondWithError(w, 400, "Cannot delete image with status 'in process'")
 		return
 	}
 
-	err = h.DB.Where("id = ?", imageId).Delete(&image).Error
 
+	repo, ok := h.Querier.(domain.ImageRepository)
+	if !ok {
+		log.Println("Querier is not an ImageRepository")
+		responses.RespondWithError(w, 500, "Internal server error")
+		return
+	}
+
+	err = repo.Delete(ctx, imageId)
 	if err != nil {
 		log.Println("Error deleting image:", err)
 		responses.RespondWithError(w, 400, fmt.Sprintf("Error deleting image: %v", err))

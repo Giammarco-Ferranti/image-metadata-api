@@ -9,15 +9,18 @@ import (
 	"testing"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/api"
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/database"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func TestHandlerAddImage(t *testing.T) {
 	db, _ := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
-	db.AutoMigrate(&models.ImageProcess{})
+	db.AutoMigrate(&database.ImageModel{})
+
+	store := database.NewStore(db)
+	repository := store.ImageRepository()
+	commander := database.NewImageCommander(store)
 
 	body := map[string]string{
 		"url": "http://example.com",
@@ -30,7 +33,10 @@ func TestHandlerAddImage(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	handler := api.Handler{DB: db}
+	handler := api.Handler{
+		Querier:   repository,
+		Commander: commander,
+	}
 
 	handler.HandlerAddImage(w, request)
 
@@ -41,7 +47,7 @@ func TestHandlerAddImage(t *testing.T) {
 
 	bodyBytes, _ := io.ReadAll(resp.Body)
 
-	var response responses.ItemResponse
+	var response api.ItemResponse
 	json.Unmarshal(bodyBytes, &response)
 
 	if response.Data.Url != body["url"] {

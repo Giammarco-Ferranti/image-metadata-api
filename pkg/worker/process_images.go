@@ -2,7 +2,7 @@ package worker
 
 import (
 	"bytes"
-	"database/sql"
+	"context"
 	"fmt"
 	"image"
 	_ "image/gif"  // register gif decoder
@@ -14,32 +14,31 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
-	"gorm.io/gorm"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/domain"
 )
 
 //This worker needs to get from the DB the last N of images.
 //Then needs to extract the height/width/format for each image from the url
 
 //start with a startExtract function
-func StartExtract(DB *gorm.DB, timeBetweenRequest time.Duration, concurrency int) {
+func StartExtract(querier domain.ImageQuerier, repository domain.ImageRepository, timeBetweenRequest time.Duration, concurrency int) {
 	log.Println("Starting Background Worker")
 	ticker := time.NewTicker(timeBetweenRequest)
+	ctx := context.Background()
 
 	for ; ; <- ticker.C {
-		var images []models.ImageProcess
-		err := DB.Where("status = ?", "pending").Order("created_at asc").Limit(concurrency).Find(&images).Error
+		images, err := querier.FindPendingImages(ctx, concurrency)
 	
 		if err != nil {
-			log.Println("Error retrieving images")
+			log.Println("Error retrieving images:", err)
 			continue
 		}
 	
 		wg := &sync.WaitGroup{}
 		//Process each image
-		for _, image := range images {
+		for _, img := range images {
 			wg.Add(1)
-			go ProcessImage(image, wg, DB)
+			go ProcessImage(img, wg, repository)
 		}
 		wg.Wait()
 	}
@@ -47,40 +46,37 @@ func StartExtract(DB *gorm.DB, timeBetweenRequest time.Duration, concurrency int
 }
 
 //Function to process each image
-func ProcessImage(img models.ImageProcess, wg *sync.WaitGroup, DB *gorm.DB) {
+func ProcessImage(img *domain.Image, wg *sync.WaitGroup, repository domain.ImageRepository) {
 	defer wg.Done()
-	err := DB.Where("id = ?", img.ID).Updates(models.ImageProcess{
-		UpdatedAt: time.Now().UTC(),
-		Status: "in process",
-	}).Error
+	ctx := context.Background()
+
+	// Mark as processing using domain method
+	img.MarkAsProcessing()
+	err := repository.Save(ctx, img)
 
 	if err != nil {
-		errorParse(img, "Error updating the image status for image id", err, DB)
+		errorParse(img, "Error updating the image status for image id", err, repository)
 		return
 	}
 
-	imageData, err := ProcessRequest(img)
+	imageData, err := ProcessRequest(img.Url)
 	if err != nil {
-		errorParse(img, "Error request url for image id", err, DB)
+		errorParse(img, "Error request url for image id", err, repository)
 		return 
 	}
 
 	width, height, format, err := DecodeImage(imageData)
 	if err != nil {
-		errorParse(img, "Couldn't decode image id", err, DB)
+		errorParse(img, "Couldn't decode image id", err, repository)
 		return
 	}
 
-	err = DB.Model(&img).Updates(models.ImageProcess{
-		UpdatedAt: time.Now().UTC(),
-		Width: sql.NullInt16{Int16: width, Valid: true},
-		Height: sql.NullInt16{Int16: height, Valid: true},
-		Format: sql.NullString{String: format, Valid: true},
-		Status: "done",
-	}).Error
+	// Mark as done using domain method
+	img.MarkAsDone(width, height, format)
+	err = repository.Save(ctx, img)
 
 	if err != nil {
-		errorParse(img, "Couldn't Update image with status done for image id", err, DB)
+		errorParse(img, "Couldn't Update image with status done for image id", err, repository)
 		return
 	}
 
@@ -89,19 +85,18 @@ func ProcessImage(img models.ImageProcess, wg *sync.WaitGroup, DB *gorm.DB) {
 	
 }
 
-func errorParse(img models.ImageProcess, msg string, err error, DB *gorm.DB) {
+func errorParse(img *domain.Image, msg string, err error, repository domain.ImageRepository) {
 	log.Printf("%v: %v, with error: %v", msg, img.ID, err)
-	err = DB.Model(&img).Updates(models.ImageProcess{
-		UpdatedAt: time.Now().UTC(),
-		Status: "failed",
-	}).Error
-	if err != nil {
-		log.Printf("Error updating failed image for img id: %v, with error: %v", img.ID, err)
+	ctx := context.Background()
+	img.MarkAsFailed()
+	saveErr := repository.Save(ctx, img)
+	if saveErr != nil {
+		log.Printf("Error updating failed image for img id: %v, with error: %v", img.ID, saveErr)
 	}
 }
 
-func ProcessRequest(img models.ImageProcess) ([]byte, error) {
-	resp, err := http.Get(img.Url)
+func ProcessRequest(url string) ([]byte, error) {
+	resp, err := http.Get(url)
 
 	if err != nil {
 		return nil, err

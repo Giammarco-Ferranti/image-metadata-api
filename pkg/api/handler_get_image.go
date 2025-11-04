@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
 func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	imageIdString := chi.URLParam(r, "id")
 	imageId, err := uuid.Parse(imageIdString)
 
@@ -21,9 +21,8 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image := models.ImageProcess{}
 
-	err = h.DB.Where("id = ?", imageId).First(&image).Error
+	image, err := h.Querier.FindById(ctx, imageId)
 
 	if err != nil {
 		log.Println("Error retrieving image: ", err)
@@ -31,8 +30,14 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.RespondWithJson(w, 200, responses.ItemResponse{
-		Data: image.ToResponse(),
+	// Check if image was not found (returns nil, nil)
+	if image == nil {
+		responses.RespondWithError(w, 404, "Image not found")
+		return
+	}
+
+	responses.RespondWithJson(w, 200, ItemResponse{
+		Data: NewImageResponse(image),
 	})
 	
 }

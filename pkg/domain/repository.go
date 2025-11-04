@@ -8,7 +8,8 @@ import (
 
 type ImageQuerier interface {
 	FindById (ctx context.Context, id uuid.UUID) (*Image, error)
-	FindAll (ctx context.Context, limit, offset int) ([]*Image, error)
+	FindAll (ctx context.Context, total, offset int) ([]*Image, error)
+	FindPendingImages(ctx context.Context, limit int) ([]*Image, error)
 }
 
 type ImageRepository interface {

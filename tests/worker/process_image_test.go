@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	_ "embed"
 	"net/http"
 	"net/http/httptest"
@@ -8,7 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/database"
+	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/domain"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/worker"
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
@@ -28,7 +30,10 @@ func TestProcessImage(t *testing.T) {
 	}
 
 	//Migrate schema
-	db.AutoMigrate(&models.ImageProcess{})
+	db.AutoMigrate(&database.ImageModel{})
+
+	store := database.NewStore(db)
+	repository := store.ImageRepository()
 
 	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(testPng)
@@ -36,27 +41,37 @@ func TestProcessImage(t *testing.T) {
 
 	defer testserver.Close()
 
-	testImg := models.ImageProcess{
-		ID: uuid.New(),
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
-		Url: testserver.URL,
-		Status: "pending",
+	now := time.Now().UTC()
+	testImg := &domain.Image{
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		Url:       testserver.URL,
+		Status:    "pending",
+		Width:     nil,
+		Height:    nil,
+		Format:    nil,
 	}
 
-	db.Create(&testImg)
+	ctx := context.Background()
+	err = repository.Create(ctx, testImg)
+	if err != nil {
+		t.Errorf("Error creating test image: %v", err)
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	worker.ProcessImage(testImg, &wg, db)
+	worker.ProcessImage(testImg, &wg, repository)
 	wg.Wait()
 
 	//Assert the results
-	var result models.ImageProcess
-	db.First(&result, testImg.ID)
+	result, err := repository.FindById(ctx, testImg.ID)
+	if err != nil {
+		t.Errorf("Error finding result: %v", err)
+	}
 
 	if result.Status != "done" {
-		t.Errorf("Expected status 'done', got %v", result)
+		t.Errorf("Expected status 'done', got %v", result.Status)
 	}
 
 }
@@ -69,11 +84,7 @@ func TestProcessRequest(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	img := models.ImageProcess{
-		Url: testServer.URL,
-	}
-
-	data, err := worker.ProcessRequest(img)
+	data, err := worker.ProcessRequest(testServer.URL)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)

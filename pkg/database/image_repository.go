@@ -27,11 +27,31 @@ func (r *imageRepository) FindById(ctx context.Context, id uuid.UUID) (*domain.I
 }
 
 // FindAll implements ImageQuerier interface
-func (r *imageRepository) FindAll(ctx context.Context, limit, offset int) ([]*domain.Image, error) {
+func (r *imageRepository) FindAll(ctx context.Context, total, offset int) ([]*domain.Image, error) {
 	var models []ImageModel
 	result := r.DB.WithContext(ctx).
-		Limit(limit).
+		Limit(total).
 		Offset(offset).
+		Find(&models)
+	
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	images := make([]*domain.Image, len(models))
+	for i := range models {
+		images[i] = models[i].ToDomain()
+	}
+	return images, nil
+}
+
+// FindPendingImages implements ImageQuerier interface
+func (r *imageRepository) FindPendingImages(ctx context.Context, limit int) ([]*domain.Image, error) {
+	var models []ImageModel
+	result := r.DB.WithContext(ctx).
+		Where("status = ?", "pending").
+		Order("created_at asc").
+		Limit(limit).
 		Find(&models)
 	
 	if result.Error != nil {

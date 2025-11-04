@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/models"
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
 )
 
 
 func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
 	totalStr := r.URL.Query().Get("total")
 	offsetStr := r.URL.Query().Get("offset")
@@ -30,10 +30,9 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-
-	var images []models.ImageProcess
-	err = h.DB.Limit(total).Offset(offset).Find(&images).Error
+	
+	images, err := h.Querier.FindAll(ctx, total, offset)
+	
 	if err != nil {
 		log.Println("Couldn't retrieve images: ", err)
 		responses.RespondWithError(w, 400, fmt.Sprintf("Couldn't retrieve images: %v", err))
@@ -41,16 +40,16 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Convert to response format
-	imageResponses := make([]models.ImageProcessResponse, len(images))
+	imageResponses := make([]ImageResponse, len(images))
 	for i, img := range images {
-		imageResponses[i] = img.ToResponse()
+		imageResponses[i] = NewImageResponse(img)
 	}
 	
-	responses.RespondWithJson(w, 200, responses.PaginatedResponse{
+	responses.RespondWithJson(w, 200, PaginatedImageResponse{
 		Data: imageResponses,
-		Meta: responses.PaginationMeta{
-			Total: total,
-			Offset: offset,
+		Meta: PaginationMeta{
+			Total:        total,
+			Offset:       offset,
 			ResultsCount: len(images),
 		},
 	})

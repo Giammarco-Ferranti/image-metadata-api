@@ -31,10 +31,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Connection failed with database with error: %v", err)
 	}
-	database.NewStore(db)
+	
+	store := database.NewStore(db)
+	repository := store.ImageRepository()
+	commander := database.NewImageCommander(store)
 
-
-	go worker.StartExtract(db, time.Minute, 5)
+	go worker.StartExtract(repository, repository, time.Minute, 5)
 
 	log.Printf("Connection database started")
 
@@ -57,7 +59,10 @@ func main() {
 	router.Get("/healthz", health.HandlerHealth)
 
 	//Initiate api handler
-	apiHandler := api.Handler{DB: db}
+	apiHandler := api.Handler{
+		Querier:   repository,
+		Commander: commander,
+	}
 
 	v1Router := chi.NewRouter()
 
