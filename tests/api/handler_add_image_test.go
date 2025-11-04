@@ -41,8 +41,8 @@ func TestHandlerAddImage(t *testing.T) {
 	handler.HandlerAddImage(w, request)
 
 	resp := w.Result()
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusCreated {
+		t.Errorf("expected status 201, got %d", resp.StatusCode)
 	}
 
 	bodyBytes, _ := io.ReadAll(resp.Body)

@@ -300,6 +300,8 @@ go test ./... -cover
 
 ## Project Structure
 
+The project follows a clean architecture pattern with clear separation of concerns:
+
 ```
 .
 ├── cmd/
@@ -310,19 +312,48 @@ go test ./... -cover
 │   │   ├── handler_delete_image.go
 │   │   ├── handler_get_image.go
 │   │   ├── handler_get_images.go
-│   │   └── routes.go
+│   │   ├── handler.go           # Handler struct and dependencies
+│   │   ├── request.go           # Request models
+│   │   ├── responses.go         # Response models
+│   │   └── routes.go            # Route definitions
+│   ├── config/                  # Configuration management
+│   │   └── config.go            # Environment variable loading
+│   ├── database/                # Database layer (implementation)
+│   │   ├── connection.go        # Database connection setup
+│   │   ├── image_commander.go   # Image command operations
+│   │   ├── image_repository.go  # Image query operations
+│   │   ├── models.go            # Database models (GORM)
+│   │   └── store.go             # Store interface implementation
+│   ├── domain/                  # Domain layer (business logic)
+│   │   ├── commander.go         # Image command interface
+│   │   ├── image.go             # Domain model and business logic
+│   │   ├── repository.go        # Image query interface
+│   │   └── store.go             # Store interface
 │   ├── health/                  # Health check handler
-│   ├── middleware/              # Authentication middleware
-│   ├── models/                  # Data models
+│   │   └── handler_health.go
+│   ├── middleware/              # HTTP middleware
+│   │   └── auth.go              # Bearer token authentication
 │   ├── responses/               # Response utilities
+│   │   └── responses.go
 │   └── worker/                  # Background worker
+│       └── process_images.go    # Image processing worker
 ├── tests/                       # Test files
+│   ├── api/                     # API handler tests
+│   ├── health/                  # Health check tests
+│   └── worker/                  # Worker tests
+├── docs/                        # API documentation (OpenAPI)
+│   └── openapi/
 ├── docker-compose.yml          # Docker Compose configuration
 ├── Dockerfile                   # Docker image definition
-├── docs/                        # API documentation (OpenAPI)
 └── go.mod                       # Go dependencies
-
 ```
+
+### Architecture Layers
+
+- **Domain Layer** (`pkg/domain/`): Contains business entities, interfaces, and domain logic. This layer is independent of infrastructure concerns.
+- **Database Layer** (`pkg/database/`): Implements the domain interfaces using GORM and PostgreSQL. Handles data persistence and retrieval.
+- **API Layer** (`pkg/api/`): HTTP handlers that use domain interfaces to handle requests and responses.
+- **Config Layer** (`pkg/config/`): Centralized configuration management from environment variables.
 
 ## Configuration
 
@@ -356,11 +387,13 @@ The worker currently supports:
 
 ### Database Migrations
 
-The application uses GORM's auto-migration. The database schema is automatically created/updated on startup. See `cmd/main.go`:
+The application uses GORM's auto-migration. The database schema is automatically created/updated on startup. See `pkg/database/connection.go`:
 
 ```go
-db.AutoMigrate(&models.ImageProcess{})
+db.AutoMigrate(&ImageModel{})
 ```
+
+The database models are defined in `pkg/database/models.go` as `ImageModel`, which converts to/from the domain model (`domain.Image`) defined in `pkg/domain/image.go`.
 
 ## Author
 
