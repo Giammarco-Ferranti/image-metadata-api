@@ -9,7 +9,7 @@ import (
 	_ "image/jpeg" // register jpeg decoder
 	_ "image/png"  // register png decoder
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -22,7 +22,7 @@ import (
 
 //start with a startExtract function
 func StartExtract(querier domain.ImageQuerier, repository domain.ImageRepository, timeBetweenRequest time.Duration, concurrency int) {
-	log.Println("Starting Background Worker")
+	slog.Info("Starting Background Worker")
 	ticker := time.NewTicker(timeBetweenRequest)
 	ctx := context.Background()
 
@@ -30,7 +30,7 @@ func StartExtract(querier domain.ImageQuerier, repository domain.ImageRepository
 		images, err := querier.FindPendingImages(ctx, concurrency)
 	
 		if err != nil {
-			log.Println("Error retrieving images:", err)
+			slog.Error("Error retrieving images", "error", err)
 			continue
 		}
 	
@@ -80,18 +80,18 @@ func ProcessImage(img *domain.Image, wg *sync.WaitGroup, repository domain.Image
 		return
 	}
 
-	log.Println("Successfully processed image id: ", img.ID)
-	log.Println("============================")
+	slog.Info("Successfully processed image", "image_id", img.ID)
+	slog.Info("============================")
 	
 }
 
 func errorParse(img *domain.Image, msg string, err error, repository domain.ImageRepository) {
-	log.Printf("%v: %v, with error: %v", msg, img.ID, err)
+	slog.Error(msg, "image_id", img.ID, "error", err)
 	ctx := context.Background()
 	img.MarkAsFailed()
 	saveErr := repository.Save(ctx, img)
 	if saveErr != nil {
-		log.Printf("Error updating failed image for img id: %v, with error: %v", img.ID, saveErr)
+		slog.Error("Error updating failed image", "image_id", img.ID, "error", saveErr)
 	}
 }
 

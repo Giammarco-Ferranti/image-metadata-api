@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -34,7 +34,7 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 	images, err := h.Querier.FindAll(ctx, total, offset)
 	
 	if err != nil {
-		log.Println("Couldn't retrieve images: ", err)
+		slog.Error("Couldn't retrieve images", "error", err)
 		responses.RespondWithError(w, 500, fmt.Sprintf("Couldn't retrieve images: %v", err))
 		return
 	}

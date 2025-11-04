@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
@@ -16,7 +16,7 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 	imageId, err := uuid.Parse(imageIdString)
 
 	if err != nil {
-		log.Println("Invalid image id: ", err)
+		slog.Error("Invalid image id", "error", err)
 		responses.RespondWithError(w, 400, fmt.Sprintf("Invalid image id, %v", err))
 		return
 	}
@@ -25,7 +25,7 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 	image, err := h.Querier.FindById(ctx, imageId)
 
 	if err != nil {
-		log.Println("Error retrieving image: ", err)
+		slog.Error("Error retrieving image", "error", err)
 		responses.RespondWithError(w, 500, fmt.Sprintf("Error retrieving image: %v", err))
 		return
 	}

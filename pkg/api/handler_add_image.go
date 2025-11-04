@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/responses"
@@ -19,7 +19,7 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&req)
 
 	if err != nil {
-		log.Println("Error decoding request body", err)
+		slog.Error("Error decoding request body", "error", err)
 		responses.RespondWithError(w, 400, "Error decoding request body")
 		return
 	}
@@ -27,7 +27,7 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 	image, err := h.Commander.CreateImage(ctx, req.URL)
 	if err != nil {
 		// Domain validation errors come from Validate() method
-		log.Println("Error creating image", err)
+		slog.Error("Error creating image", "error", err)
 		responses.RespondWithError(w, 400, err.Error())
 		return
 	}

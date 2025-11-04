@@ -2,13 +2,13 @@ package responses
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	if code > 499 {
-		log.Println("Responding with 5xx error:", msg)
+		slog.Error("Responding with 5xx error", "message", msg)
 	}
 
 	type ErrorMsg struct {
@@ -23,7 +23,7 @@ func RespondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	data, err := json.Marshal(payload)
 
 	if err != nil {
-		log.Printf("Failed to marshal JSON response: %v", payload)
+		slog.Error("Failed to marshal JSON response", "error", err, "payload", payload)
 		w.WriteHeader(500)
 		return
 	}

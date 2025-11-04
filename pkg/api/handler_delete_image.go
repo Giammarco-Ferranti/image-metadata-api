@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/domain"
@@ -17,7 +17,7 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 	imageId, err := uuid.Parse(imageIdString)
 
 	if err != nil {
-		log.Println("Couldn't parse uuid:", err)
+		slog.Error("Couldn't parse uuid", "error", err)
 		responses.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse id: %v", err))
 		return
 	}
@@ -26,7 +26,7 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 	image, err := h.Querier.FindById(ctx, imageId)
 
 	if err != nil {
-		log.Println("Couldn't get image:", err)
+		slog.Error("Couldn't get image", "error", err)
 		responses.RespondWithError(w, 500, fmt.Sprintf("Couldn't get image: %v", err))
 		return
 	}
@@ -37,7 +37,7 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !image.CanDelete() {
-		log.Println("Cannot delete image with status 'in process'")
+		slog.Error("Cannot delete image with status 'in process'")
 		responses.RespondWithError(w, 400, "Cannot delete image with status 'in process'")
 		return
 	}
@@ -45,14 +45,14 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 
 	repo, ok := h.Querier.(domain.ImageRepository)
 	if !ok {
-		log.Println("Querier is not an ImageRepository")
+		slog.Error("Querier is not an ImageRepository")
 		responses.RespondWithError(w, 500, "Internal server error")
 		return
 	}
 
 	err = repo.Delete(ctx, imageId)
 	if err != nil {
-		log.Println("Error deleting image:", err)
+		slog.Error("Error deleting image", "error", err)
 		responses.RespondWithError(w, 500, fmt.Sprintf("Error deleting image: %v", err))
 		return
 	}

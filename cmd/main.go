@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Giammarco-Ferranti/image-metadata-api/pkg/api"
@@ -19,17 +20,20 @@ import (
 
 func main() {
 
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	conf, err := config.LoadConfig()
 
 	if err != nil {
-		log.Fatalf("Couldn't load config file with error: %v", err)
+		slog.Error("Couldn't load config file", "error", err)
+		os.Exit(1)
 	}
 
 	db, err := database.Connect(conf)
 	
 	if err != nil {
-		log.Fatalf("Connection failed with database with error: %v", err)
+		slog.Error("Connection failed with database", "error", err)
+		os.Exit(1)
 	}
 	
 	store := database.NewStore(db)
@@ -38,7 +42,7 @@ func main() {
 
 	go worker.StartExtract(repository, repository, time.Minute, 5)
 
-	log.Printf("Connection database started")
+	slog.Info("Connection database started")
 
 	router := chi.NewRouter()
 
@@ -81,11 +85,12 @@ func startServer(router chi.Router, portString string) {
 		Handler: router,
 	}
 
-	log.Printf("Server started with port: %v", portString)
+	slog.Info("Server started", "port", portString)
 
 	err := server.ListenAndServe()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Server", "error", err)
+		os.Exit(1)
 	}
 }
