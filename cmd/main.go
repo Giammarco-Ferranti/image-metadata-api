@@ -60,7 +60,8 @@ func main() {
   }))
 
 	//Health endpoint
-	router.Get("/healthz", health.HandlerHealth)
+	healthHandler := &health.HealthHandler{DB: db}
+	router.Get("/healthz", healthHandler.HandlerHealth)
 
 	//Initiate api handler
 	apiHandler := api.Handler{
