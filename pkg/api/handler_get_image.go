@@ -26,7 +26,7 @@ func (h *Handler) HandlerGetImage(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Error retrieving image: ", err)
-		responses.RespondWithError(w, 400, fmt.Sprintf("Error retrieving image: %v", err))
+		responses.RespondWithError(w, 500, fmt.Sprintf("Error retrieving image: %v", err))
 		return
 	}
 

@@ -33,5 +33,5 @@ func (h Handler) HandlerAddImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := NewImageResponse(image)
-	responses.RespondWithJson(w, 200, ItemResponse{Data: response})
+	responses.RespondWithJson(w, 201, ItemResponse{Data: response})
 }

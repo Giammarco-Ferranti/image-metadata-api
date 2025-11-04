@@ -35,7 +35,7 @@ func (h Handler) HandlerGetImages (w http.ResponseWriter, r *http.Request) {
 	
 	if err != nil {
 		log.Println("Couldn't retrieve images: ", err)
-		responses.RespondWithError(w, 400, fmt.Sprintf("Couldn't retrieve images: %v", err))
+		responses.RespondWithError(w, 500, fmt.Sprintf("Couldn't retrieve images: %v", err))
 		return
 	}
 	

@@ -12,14 +12,20 @@ post:
         schema:
           $ref: "#/components/schemas/AddImageRequest"
   responses:
-    "200":
+    "201":
       description: Image record created successfully
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ItemResponse"
     "400":
-      description: Bad request (invalid URL or missing url field)
+      description: Bad request (invalid JSON, invalid URL format, or missing url field)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    "500":
+      description: Internal server error (database error)
       content:
         application/json:
           schema:

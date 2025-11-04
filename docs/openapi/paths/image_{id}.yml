@@ -21,7 +21,19 @@ get:
           schema:
             $ref: "#/components/schemas/ItemResponse"
     "400":
-      description: Bad request (invalid image ID or image not found)
+      description: Bad request (invalid image ID format)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    "404":
+      description: Image not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    "500":
+      description: Internal server error (database error)
       content:
         application/json:
           schema:
@@ -51,7 +63,19 @@ delete:
             type: string
             example: Successfully deleted image
     "400":
-      description: Bad request (invalid image ID, image not found, or image has 'in process' status)
+      description: Bad request (invalid image ID format or image has 'in process' status)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    "404":
+      description: Image not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    "500":
+      description: Internal server error (database error)
       content:
         application/json:
           schema:

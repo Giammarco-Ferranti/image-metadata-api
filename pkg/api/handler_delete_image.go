@@ -27,7 +27,7 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Couldn't get image:", err)
-		responses.RespondWithError(w, 400, fmt.Sprintf("Couldn't get image: %v", err))
+		responses.RespondWithError(w, 500, fmt.Sprintf("Couldn't get image: %v", err))
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 	err = repo.Delete(ctx, imageId)
 	if err != nil {
 		log.Println("Error deleting image:", err)
-		responses.RespondWithError(w, 400, fmt.Sprintf("Error deleting image: %v", err))
+		responses.RespondWithError(w, 500, fmt.Sprintf("Error deleting image: %v", err))
 		return
 	}
 

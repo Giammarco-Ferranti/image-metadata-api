@@ -123,7 +123,12 @@ Authorization: Bearer <API_KEY>
 
 Retrieves all images from the database.
 
-**Response:**
+**Query Parameters:**
+
+- `total` (optional): Number of items to retrieve (max 100, default 100)
+- `offset` (optional): Offset for pagination (default 0)
+
+**Response (200 OK):**
 
 ```json
 {
@@ -138,9 +143,19 @@ Retrieves all images from the database.
       "height": 1080,
       "format": "jpeg"
     }
-  ]
+  ],
+  "meta": {
+    "total": 100,
+    "offset": 0,
+    "results_count": 1
+  }
 }
 ```
+
+**Error Responses:**
+
+- **400 Bad Request**: Invalid `total` or `offset` parameters (e.g., negative values, `total` > 100)
+- **500 Internal Server Error**: Database error
 
 ### Add Image
 
@@ -160,7 +175,7 @@ Submits an image URL for processing.
 }
 ```
 
-**Response:**
+**Response (201 Created):**
 
 ```json
 {
@@ -174,6 +189,11 @@ Submits an image URL for processing.
 }
 ```
 
+**Error Responses:**
+
+- **400 Bad Request**: Invalid JSON, invalid URL format (e.g., missing scheme, malformed URL), or missing `url` field
+- **500 Internal Server Error**: Database error
+
 ### Get Image by ID
 
 ```
@@ -183,7 +203,7 @@ Authorization: Bearer <API_KEY>
 
 Retrieves a specific image by its UUID.
 
-**Response:**
+**Response (200 OK):**
 
 ```json
 {
@@ -200,6 +220,12 @@ Retrieves a specific image by its UUID.
 }
 ```
 
+**Error Responses:**
+
+- **400 Bad Request**: Invalid image ID format (not a valid UUID)
+- **404 Not Found**: Image with the specified ID does not exist
+- **500 Internal Server Error**: Database error
+
 ### Delete Image
 
 ```
@@ -207,15 +233,19 @@ DELETE /v1/image/{id}
 Authorization: Bearer <API_KEY>
 ```
 
-Deletes an image from the database.
+Deletes an image from the database. Cannot delete images with status 'in process'.
 
-**Response:**
+**Response (200 OK):**
 
 ```json
 "Successfully deleted image"
 ```
 
-HTTP Status: 200 OK
+**Error Responses:**
+
+- **400 Bad Request**: Invalid image ID format (not a valid UUID) or image has status 'in process'
+- **404 Not Found**: Image with the specified ID does not exist
+- **500 Internal Server Error**: Database error
 
 ## Image Status
 

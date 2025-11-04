@@ -13,21 +13,21 @@ func AuthMiddleware(apiKey string) func(http.Handler) http.Handler {
 			authHeader := r.Header.Get("Authorization")
 
 			if !strings.HasPrefix(authHeader, "Bearer") {
-				responses.RespondWithError(w, 400, "Authorization doesn't contain valid Bearer string")
+				responses.RespondWithError(w, 401, "Authorization doesn't contain valid Bearer string")
 				return 
 			}
 
 			parts := strings.Split(authHeader, " ")
 
 			if len(parts) < 2 || parts[1] == "" {
-				responses.RespondWithError(w, 400, "Invalid Bearer token format")
+				responses.RespondWithError(w, 401, "Invalid Bearer token format")
 				return
 			}
 
 			token := strings.TrimSpace(parts[1])
 
 			if token != apiKey {
-				responses.RespondWithError(w, 400, "Unauthorized")
+				responses.RespondWithError(w, 401, "Unauthorized")
 				return 
 			}
 			
