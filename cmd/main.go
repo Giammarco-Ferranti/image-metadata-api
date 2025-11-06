@@ -76,7 +76,8 @@ func main() {
 	apiHandler.Routes(v1Router)
 
 	router.Mount("/v1", v1Router)
-
+	
+	//start server
 	startServer(router, conf.Port)
 }
 
